@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Flexan · Flexan ads, Oct 18 to 24</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f6f6f5;--card:#ffffff;--ink:#1c1b1b;--muted:#5f6368;--brand:#aa2d29;--accent:#ddaba9;--bad:#b3261e;--good:#2f7d4e;--line:#e4e3e1;--plain:color-mix(in srgb,var(--muted) 42%,color-mix(in srgb,var(--accent) 40%,var(--bg)));--soft:color-mix(in srgb,var(--ink) 60%,var(--muted))}
+/* The report look (the Mokomoko recovery deck, 2026-10-02). The colors come from the client's brand as :root
+   variables, written by render.rs above this file: --bg --card --ink --muted --brand --accent --bad --good --line,
+   and two mixed from them: --plain (a quiet bar or dot) and --soft (body text a little lighter than the ink).
+
+   Two layouts:
+   - The stage (a laptop or larger): one 1280 x 720 slide at a time, scaled to fit the window, moved by keys, clicks,
+     and swipes. The stage is never scaled below 0.85, so the smallest text (16.5 px) reads at 14 px or more.
+   - The page (a phone, a tablet, a short window): every slide is a full-width section, one under the other, read by
+     scrolling. Each section animates in when it scrolls into view. Charts switch to their phone drawing.
+   The page layout's media query is the same in deck.js (PAGE): change both together. It is for screens only: a print
+   is always the stage's slides, one a page. */
+
+*{box-sizing:border-box;margin:0}
+html,body{height:100%;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,sans-serif;overflow:hidden}
+p,li{text-wrap:pretty}
+/* Short blocks wrap balanced, so no line ends with one word alone (Will: no orphan words, 2026-09-15). */
+.tile b,.tile span,.fixes b,.fixes span,.cap,.stats span,.lead{text-wrap:balance}
+h1,h2{text-wrap:balance}
+.stage{position:absolute;left:50%;top:50%;width:1280px;height:720px;transform-origin:center}
+section{position:absolute;inset:0;padding:64px 100px;display:flex;flex-direction:column;gap:18px;opacity:0;pointer-events:none;transition:opacity .5s}
+section.active{opacity:1;pointer-events:auto}
+.kicker{font-size:16.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--brand)}
+h1{font-size:58px;line-height:1.08;font-weight:800;letter-spacing:-.02em;max-width:900px}
+h2{font-size:42px;line-height:1.12;font-weight:800;letter-spacing:-.02em}
+.lead{font-size:21px;line-height:1.45;color:var(--soft);max-width:1000px}
+.cap{font-size:16.5px;color:var(--muted);margin-top:6px}
+.title{justify-content:center;gap:26px}
+.title .logo{height:96px;width:auto;max-width:320px;object-fit:contain;border-radius:22px;align-self:flex-start}
+.sub{font-size:20px;color:var(--muted)}
+.anim{opacity:0;transform:translateY(18px)}
+.active .anim{animation:rise .7s cubic-bezier(.2,.7,.2,1) forwards;animation-delay:var(--d,0s)}
+@keyframes rise{to{opacity:1;transform:none}}
+
+/* Charts: inline SVG. Each chart is drawn twice: .big for the stage, .phone (a narrow drawing with bigger labels)
+   for the page layout. A tone class sets --c, the color its bars, line, and dots take. */
+.t-plain{--c:var(--plain)} .t-bad{--c:var(--bad)} .t-good{--c:var(--good)} .t-brand{--c:var(--brand)} .t-accent{--c:var(--accent)}
+.chart{width:100%;height:auto;overflow:visible;display:block}
+.chart.phone{display:none}
+.chart .bar{fill:var(--c);transform-box:fill-box;transform-origin:bottom;transform:scaleY(0)}
+.active .chart .bar{animation:grow .5s ease-out forwards;animation-delay:calc(.35s + var(--i)*6ms)}
+@keyframes grow{to{transform:scaleY(1)}}
+.chart .axis{font-size:14px;fill:var(--muted)}
+.chart .axis.halo{paint-order:stroke;stroke:var(--bg);stroke-width:4px;stroke-linejoin:round}
+.chart .val{font-size:15px;font-weight:700;fill:var(--ink)}
+.chart .rowlbl{font-size:16px;fill:var(--ink)}
+.chart .grid{stroke:var(--line);stroke-width:1}
+.chart .mark{stroke:var(--ink);stroke-dasharray:4 4;stroke-width:1.5}
+.chart .note{font-size:14px;font-weight:600;fill:var(--ink)}
+.chart .line{fill:none;stroke:var(--c);stroke-width:3;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1}
+.active .chart .line{animation:draw 2.2s ease-in-out .4s forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+.chart .hit{fill:transparent;cursor:crosshair}
+.chart .hov{fill:var(--c);stroke:#fff;stroke-width:3;opacity:0;pointer-events:none;transition:opacity .15s}
+.chart .hovline{stroke:var(--ink);stroke-width:1;opacity:0;pointer-events:none}
+.chart.hovering .hovline{opacity:.35} .chart.hovering .hov.on{opacity:1}
+.chart .wdot{fill:var(--c);opacity:0}
+.chart .wval{font-size:15px;font-weight:700;fill:var(--ink);opacity:0}
+.active .chart .wdot,.active .chart .wval{animation:fade .3s ease-out forwards;animation-delay:calc(.5s + var(--i)*110ms)}
+@keyframes fade{to{opacity:1}}
+.chart .hbar{fill:var(--c);transform-box:fill-box;transform-origin:left;transform:scaleX(0)}
+.active .chart .hbar{animation:growx .9s cubic-bezier(.2,.7,.2,1) forwards;animation-delay:calc(.5s + var(--i)*40ms)}
+@keyframes growx{to{transform:scaleX(1)}}
+.chart.small{max-width:820px}
+.chart.phone .axis,.chart.phone .note,.chart.phone .val,.chart.phone .wval{font-size:13px}
+.chart.phone .rowlbl{font-size:14px} .chart.phone .line{stroke-width:2.5}
+.tip{position:fixed;z-index:9;pointer-events:none;background:var(--ink);color:#fff;font-size:14px;font-weight:600;padding:8px 12px;border-radius:8px;white-space:nowrap;opacity:0;transform:translate(-50%,calc(-100% - 14px));transition:opacity .12s}
+.tip.on{opacity:1}
+
+/* Views of one chart with a toggle (Daily / Weekly). */
+.views{position:relative}
+.views .v{display:none} .views .v.on{display:block}
+.toggle{position:absolute;right:0;top:-58px;display:flex;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:4px;z-index:2}
+.toggle button{font:600 16.5px Inter,system-ui,sans-serif;color:var(--muted);background:none;border:0;border-radius:999px;padding:8px 18px;cursor:pointer}
+.toggle button.on{background:var(--brand);color:#fff}
+
+.stats{display:flex;align-items:center;gap:28px}
+.stats div{display:flex;flex-direction:column}
+.stats em{font-style:normal;font-size:52px;font-weight:800;letter-spacing:-.02em}
+.stats span{font-size:16.5px;color:var(--muted)}
+.stats .arrow{font-size:40px;color:var(--muted)}
+.bad,.bad em,.bad b{color:var(--bad)} .good,.good em,.good b{color:var(--good)}
+.brandtone,.brandtone em,.brandtone b{color:var(--brand)} .accenttone,.accenttone em,.accenttone b{color:var(--accent)}
+p.good,p.bad{font-size:19px;font-weight:600}
+.legend{white-space:nowrap}
+.sw{display:inline-block;width:12px;height:12px;border-radius:3px;margin:0 4px 0 10px;vertical-align:-1px;background:var(--c)}
+
+/* A chart with a short list beside it. */
+.split{display:grid;grid-template-columns:3fr 1fr;gap:36px;align-items:end}
+.months{display:flex;flex-direction:column;gap:8px}
+.months .top{margin:0 0 4px}
+.months div{display:flex;justify-content:space-between;align-items:baseline;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 16px}
+.months span{color:var(--muted);font-size:16.5px} .months b{font-size:30px;font-weight:800}
+
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:6px}
+.tile{--d:0s;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:8px;min-height:170px}
+.tile b{font-size:19px} .tile span{font-size:16.5px;line-height:1.4;color:var(--soft)}
+.ck{width:30px;height:30px;flex:none;border-radius:50%;background:var(--good);padding:5px}
+.ck path{fill:none;stroke:#fff;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:24;stroke-dashoffset:24}
+.active .ck path{animation:tick .5s ease-out forwards;animation-delay:calc(var(--d) + .3s)}
+@keyframes tick{to{stroke-dashoffset:0}}
+
+/* A section's opening slide (the client's question before its answers): the words in the middle, a little bigger. */
+.divider{justify-content:center}
+.divider h2{font-size:48px;max-width:1000px}
+.divider .lead{font-size:23px}
+
+/* A table: a list the reader checks item by item (the negatives a plan adds). Its text stays at 16.5 px, so it reads at
+   14 px on the smallest stage. */
+.list{width:100%;border-collapse:separate;border-spacing:0;background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;font-size:16.5px;line-height:1.25}
+.list th,.list td{padding:3px 16px;text-align:left;vertical-align:top;border-top:1px solid var(--line)}
+.list thead th{border-top:0;font-weight:600;color:var(--muted)}
+.list td{color:var(--soft)}
+.list td:first-child{color:var(--ink);font-weight:600;white-space:nowrap}
+.list .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.list tr.group th{background:color-mix(in srgb,var(--brand) 9%,var(--card));color:var(--brand);font-weight:700}
+.list tr.bad td{color:var(--bad)} .list tr.good td{color:var(--good)}
+
+/* Search result mock-ups. */
+.serps{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-top:8px}
+.serp{background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px 26px;display:flex;flex-direction:column;gap:14px}
+.serp .q{border:1px solid #dadce0;border-radius:24px;padding:10px 20px;font-size:18px;color:#202124}
+.serp ol{padding-left:22px;display:flex;flex-direction:column;gap:10px}
+.serp li b{display:block;font-size:17px;color:#1a0dab;font-weight:500}
+.serp li span{font-size:16.5px;color:var(--muted)}
+.serp li.us b{color:var(--good);font-weight:700}
+
+/* Numbered steps. */
+.fixes{list-style:none;padding:0;display:flex;flex-direction:column;gap:14px;margin-top:6px}
+.fixes li{display:flex;gap:18px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 22px}
+.fixes i{font-style:normal;font-size:17px;flex:none;width:36px;height:36px;border-radius:50%;background:var(--brand);color:#fff;display:grid;place-items:center;font-weight:700}
+.fixes li>div{flex:1}
+.fixes b{display:block;font-size:20px} .fixes span{font-size:16.5px;color:var(--soft);line-height:1.4}
+.fixes .when{font-style:normal;flex:none;font-size:16.5px;font-weight:600;color:var(--brand);align-self:center}
+
+nav{position:fixed;left:0;right:0;bottom:0;height:4px;background:var(--line)}
+nav i{display:block;height:100%;background:var(--brand);transition:width .4s}
+.count{position:fixed;right:18px;bottom:12px;font-size:14px;color:var(--muted)}
+.hint{position:fixed;left:18px;bottom:12px;font-size:14px;color:var(--muted)}
+
+/* The page layout: phones, tablets, short windows. Keep in step with PAGE in deck.js. */
+@media screen and (max-width:1087px),screen and (max-height:611px){
+  html,body{height:auto;overflow-x:hidden;overflow-y:visible}
+  .stage{position:static;width:auto;height:auto;transform:none!important}
+  section{position:relative;inset:auto;padding:44px 16px;gap:16px;opacity:1;pointer-events:auto;border-bottom:1px solid var(--line)}
+  section:last-child{border-bottom:0;padding-bottom:64px}
+  section.title{min-height:72vh}
+  .kicker{font-size:14px}
+  h1{font-size:36px} h2{font-size:27px;line-height:1.18}
+  .lead{font-size:17px}
+  .cap{font-size:14px}
+  .sub{font-size:16px}
+  .title .logo{height:72px;border-radius:16px}
+  .chart.big{display:none} .chart.phone{display:block}
+  .chart.small{max-width:none}
+  .chart.phone{max-width:640px}
+  .views{display:flex;flex-direction:column}
+  .toggle{position:static;align-self:flex-start;margin-bottom:12px}
+  .toggle button{font-size:15px;min-height:44px;padding:10px 20px}
+  .stats{flex-direction:column;align-items:flex-start;gap:4px}
+  .stats em{font-size:40px}
+  .stats span{font-size:14px}
+  .stats .arrow{font-size:30px;line-height:1;transform:rotate(90deg);margin:2px 0 2px 8px}
+  .split{grid-template-columns:1fr;gap:20px}
+  .months span{font-size:15px} .months b{font-size:24px}
+  .tiles{grid-template-columns:1fr;gap:10px}
+  .tile{min-height:0;padding:16px}
+  .tile b{font-size:17px} .tile span{font-size:15px}
+  section.divider{min-height:60vh;justify-content:center}
+  .divider h2{font-size:30px}
+  .divider .lead{font-size:18px}
+  .list{font-size:14px}
+  .list th,.list td{padding:6px 10px}
+  .list td:first-child{white-space:normal}
+  .serps{grid-template-columns:1fr;gap:16px}
+  .serp{padding:18px}
+  .serp li span{font-size:14px}
+  .fixes li{padding:14px 16px;gap:14px}
+  .fixes i{width:32px;height:32px}
+  .fixes b{font-size:17px} .fixes span{font-size:15px}
+  .fixes li{flex-wrap:wrap}
+  .fixes .when{font-size:14px;align-self:flex-start;margin-left:46px;width:calc(100% - 46px)}
+  p.good,p.bad{font-size:17px}
+  nav,.hint,.count{display:none}
+  .tip{white-space:normal;max-width:calc(100vw - 32px);font-size:14px}
+}
+
+/* Printed: one slide per landscape page, every slide shown, nothing moving (the still rules below), no navigation. */
+@media print{
+  @page{size:1280px 720px;margin:0}
+  html,body{height:auto;overflow:visible;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .stage{position:static;width:1280px;height:auto;transform:none!important}
+  section{position:relative;inset:auto;width:1280px;height:720px;opacity:1;overflow:hidden;background:var(--bg);break-after:page;break-inside:avoid}
+  section:last-child{break-after:auto}
+  nav,.hint,.count,.tip,.toggle{display:none!important}
+}
+
+.still *,.still *::before,.still *::after{animation:none!important;transition:none!important}
+.still .anim{opacity:1;transform:none}
+.still .chart .bar,.still .chart .hbar{transform:none}
+.still .chart .line{stroke-dashoffset:0}
+.still .chart .wdot,.still .chart .wval{opacity:1}
+.still .ck path{stroke-dashoffset:0}
+@media print{
+*,*::before,*::after{animation:none!important;transition:none!important}
+.anim{opacity:1;transform:none}
+.chart .bar,.chart .hbar{transform:none}
+.chart .line{stroke-dashoffset:0}
+.chart .wdot,.chart .wval{opacity:1}
+.ck path{stroke-dashoffset:0}
+}
+@media (prefers-reduced-motion:reduce){
+*,*::before,*::after{animation:none!important;transition:none!important}
+.anim{opacity:1;transform:none}
+.chart .bar,.chart .hbar{transform:none}
+.chart .line{stroke-dashoffset:0}
+.chart .wdot,.chart .wval{opacity:1}
+.ck path{stroke-dashoffset:0}
+}
+</style></head>
+<body><div class="stage">
+<section class="title">
+  <img class="anim logo" style="--d:.1s" src="data:image/png;base64,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" alt="Flexan logo">
+  <h1 class="anim" style="--d:.25s">Flexan ads, Oct 18 to 24</h1>
+  <p class="anim sub" style="--d:.45s">Flexan · Digital Will Ads · October 25, 2026</p>
+</section>
+<section>
+  <p class="kicker anim">Found and fixed · 1</p>
+  <h2 class="anim" style="--d:.1s">A bidding test we ended Oct 20 paid $20.36 a click for 1 form</h2>
+  <p class="lead anim" style="--d:0.20s">From Oct 13 to 20, we tested a new bid setting on half of Generic&#39;s searches. That half spent $1,038.36 for 1 form; the normal half spent $335.03 for 1 form.</p>
+  <div class="stats anim" style="--d:0.30s"><div><em>$15.23</em><span>Normal half, per click</span></div><div class="arrow">→</div><div class="bad"><em>$20.36</em><span>Test half, per click</span></div></div>
+  <p class="good anim" style="--d:0.40s">Since Oct 20, all of Generic&#39;s searches run on its normal bid setting again.</p>
+</section>
+<section>
+  <p class="kicker anim">This week · 2</p>
+  <h2 class="anim" style="--d:.1s">Google brought 1 form Oct 18 to 24, down from 2 forms</h2>
+  <p class="lead anim" style="--d:0.20s">To win forms back we ended the costly bidding test Oct 20, and we block junk searches on Oct 27.</p>
+  <div class="stats anim" style="--d:0.30s"><div><em>2</em><span>Oct 11 to 17, forms</span></div><div class="arrow">→</div><div class="bad"><em>1</em><span>Oct 18 to 24, forms</span></div></div>
+  <div class="anim" style="--d:0.40s"><svg viewBox="0 0 1080 254" class="chart big" role="img"><line class="grid" x1="0" x2="1080.0" y1="160.0" y2="160.0"/><line class="grid" x1="0" x2="1080.0" y1="90.0" y2="90.0"/><rect class="bar t-plain" style="--i:0" x="10.8" y="90.0" width="194.4" height="140.0"/><rect class="bar t-plain" style="--i:1" x="226.8" y="55.0" width="194.4" height="175.0"/><rect class="bar t-plain" style="--i:2" x="442.8" y="125.0" width="194.4" height="105.0"/><rect class="bar t-plain" style="--i:3" x="658.8" y="160.0" width="194.4" height="70.0"/><rect class="bar t-brand" style="--i:4" x="874.8" y="195.0" width="194.4" height="35.0"/><text class="axis halo" x="0" y="156.0">2</text><text class="axis halo" x="0" y="86.0">4</text><text class="axis" x="108.0" y="250.0" text-anchor="middle">Sep 20</text><text class="axis" x="324.0" y="250.0" text-anchor="middle">Sep 27</text><text class="axis" x="540.0" y="250.0" text-anchor="middle">Oct 4</text><text class="axis" x="756.0" y="250.0" text-anchor="middle">Oct 11</text><text class="axis" x="972.0" y="250.0" text-anchor="middle">Oct 18</text><rect class="hit" x="0.0" y="0" width="216.0" height="230.0" data-tip="Sep 20 to 26 · 4 forms · $1,015.73 spend · 112 clicks"/><rect class="hit" x="216.0" y="0" width="216.0" height="230.0" data-tip="Sep 27 to Oct 3 · 5 forms · $1,329.10 spend · 105 clicks"/><rect class="hit" x="432.0" y="0" width="216.0" height="230.0" data-tip="Oct 4 to 10 · 3 forms · $992.30 spend · 81 clicks"/><rect class="hit" x="648.0" y="0" width="216.0" height="230.0" data-tip="Oct 11 to 17 · 2 forms · $1,275.85 spend · 96 clicks"/><rect class="hit" x="864.0" y="0" width="216.0" height="230.0" data-tip="Oct 18 to 24 · 1 form · $1,127.36 spend · 75 clicks"/><line class="hovline" y1="0" y2="230.0"/><circle class="hov t-bad" r="7"/></svg><svg viewBox="0 0 360 224" class="chart phone" role="img"><line class="grid" x1="0" x2="360.0" y1="140.0" y2="140.0"/><line class="grid" x1="0" x2="360.0" y1="80.0" y2="80.0"/><rect class="bar t-plain" style="--i:0" x="3.6" y="80.0" width="64.8" height="120.0"/><rect class="bar t-plain" style="--i:1" x="75.6" y="50.0" width="64.8" height="150.0"/><rect class="bar t-plain" style="--i:2" x="147.6" y="110.0" width="64.8" height="90.0"/><rect class="bar t-plain" style="--i:3" x="219.6" y="140.0" width="64.8" height="60.0"/><rect class="bar t-brand" style="--i:4" x="291.6" y="170.0" width="64.8" height="30.0"/><text class="axis halo" x="0" y="136.0">2</text><text class="axis halo" x="0" y="76.0">4</text><text class="axis" x="36.0" y="220.0" text-anchor="middle">Sep 20</text><text class="axis" x="108.0" y="220.0" text-anchor="middle">Sep 27</text><text class="axis" x="180.0" y="220.0" text-anchor="middle">Oct 4</text><text class="axis" x="252.0" y="220.0" text-anchor="middle">Oct 11</text><text class="axis" x="324.0" y="220.0" text-anchor="middle">Oct 18</text><rect class="hit" x="0.0" y="0" width="72.0" height="200.0" data-tip="Sep 20 to 26 · 4 forms · $1,015.73 spend · 112 clicks"/><rect class="hit" x="72.0" y="0" width="72.0" height="200.0" data-tip="Sep 27 to Oct 3 · 5 forms · $1,329.10 spend · 105 clicks"/><rect class="hit" x="144.0" y="0" width="72.0" height="200.0" data-tip="Oct 4 to 10 · 3 forms · $992.30 spend · 81 clicks"/><rect class="hit" x="216.0" y="0" width="72.0" height="200.0" data-tip="Oct 11 to 17 · 2 forms · $1,275.85 spend · 96 clicks"/><rect class="hit" x="288.0" y="0" width="72.0" height="200.0" data-tip="Oct 18 to 24 · 1 form · $1,127.36 spend · 75 clicks"/><line class="hovline" y1="0" y2="200.0"/><circle class="hov t-bad" r="5"/></svg><p class="cap">Google forms by week, Sunday to Saturday, Sep 20 to Oct 24, by click date</p></div>
+  <p class="good anim" style="--d:0.50s">Your form works: GA4 counted 4 forms Oct 18 to 24 from visitors who did not come from an ad.</p>
+</section>
+<section>
+  <p class="kicker anim">Where it went · 3</p>
+  <h2 class="anim" style="--d:.1s">Generic brought the week&#39;s only form, on $303.69 of spend</h2>
+  <p class="lead anim" style="--d:0.20s">The bidding test is off since Oct 20. Our second Generic campaign restarted Oct 20 and dynamic search got its first clicks Oct 24; on Nov 3 we keep what brings forms and cut the rest.</p>
+  <div class="anim" style="--d:0.30s"><table class="list"><thead><tr><th>Campaign</th><th class="num">Spend</th><th class="num">Clicks</th><th class="num">Forms</th></tr></thead><tbody><tr class="bad"><td>Generic bidding test, ended Oct 20</td><td class="num">$451.01</td><td class="num">16</td><td class="num">0</td></tr><tr class="good"><td>Generic</td><td class="num">$303.69</td><td class="num">23</td><td class="num">1</td></tr><tr><td>Second Generic campaign, from Oct 20</td><td class="num">$135.19</td><td class="num">9</td><td class="num">0</td></tr><tr><td>Dynamic search, from Oct 24</td><td class="num">$99.76</td><td class="num">2</td><td class="num">0</td></tr><tr><td>Catheter Systems, paused Oct 20</td><td class="num">$75.43</td><td class="num">4</td><td class="num">0</td></tr><tr><td>Brand</td><td class="num">$62.28</td><td class="num">21</td><td class="num">0</td></tr><tr><td>All Google</td><td class="num">$1,127.36</td><td class="num">75</td><td class="num">1</td></tr></tbody></table><p class="cap">Google by campaign, Oct 18 to 24, forms by click date</p></div>
+</section>
+<section>
+  <p class="kicker anim">Bing · 4</p>
+  <h2 class="anim" style="--d:.1s">Bing brought 0 conversions Oct 18 to 24, down from 4 conversions</h2>
+  <p class="lead anim" style="--d:0.20s">Bing spent $359.43, against $377.69, and Microsoft&#39;s display network took 109 of its 230 clicks. We turn the display network off on Oct 27 so Bing buys searches, and give it 25% more budget on Oct 28, as agreed Oct 20.</p>
+  <div class="anim" style="--d:0.30s"><svg viewBox="0 0 1080 224" class="chart big" role="img"><line class="grid" x1="0" x2="1080.0" y1="118.2" y2="118.2"/><line class="grid" x1="0" x2="1080.0" y1="36.4" y2="36.4"/><rect class="bar t-plain" style="--i:0" x="10.8" y="150.9" width="194.4" height="49.1"/><rect class="bar t-plain" style="--i:1" x="226.8" y="36.4" width="194.4" height="163.6"/><rect class="bar t-plain" style="--i:2" x="442.8" y="200.0" width="194.4" height="1.0"/><rect class="bar t-plain" style="--i:3" x="658.8" y="134.5" width="194.4" height="65.5"/><rect class="bar t-brand" style="--i:4" x="874.8" y="200.0" width="194.4" height="1.0"/><text class="axis halo" x="0" y="114.2">5</text><text class="axis halo" x="0" y="32.4">10</text><text class="axis" x="108.0" y="220.0" text-anchor="middle">Sep 20</text><text class="axis" x="324.0" y="220.0" text-anchor="middle">Sep 27</text><text class="axis" x="540.0" y="220.0" text-anchor="middle">Oct 4</text><text class="axis" x="756.0" y="220.0" text-anchor="middle">Oct 11</text><text class="axis" x="972.0" y="220.0" text-anchor="middle">Oct 18</text><rect class="hit" x="0.0" y="0" width="216.0" height="200.0" data-tip="Sep 20 to 26 · 3 conversions · $409.53 spend"/><rect class="hit" x="216.0" y="0" width="216.0" height="200.0" data-tip="Sep 27 to Oct 3 · 10 conversions · $378.45 spend"/><rect class="hit" x="432.0" y="0" width="216.0" height="200.0" data-tip="Oct 4 to 10 · 0 conversions · $403.50 spend"/><rect class="hit" x="648.0" y="0" width="216.0" height="200.0" data-tip="Oct 11 to 17 · 4 conversions · $377.69 spend"/><rect class="hit" x="864.0" y="0" width="216.0" height="200.0" data-tip="Oct 18 to 24 · 0 conversions · $359.43 spend"/><line class="hovline" y1="0" y2="200.0"/><circle class="hov t-bad" r="7"/></svg><svg viewBox="0 0 360 224" class="chart phone" role="img"><line class="grid" x1="0" x2="360.0" y1="118.2" y2="118.2"/><line class="grid" x1="0" x2="360.0" y1="36.4" y2="36.4"/><rect class="bar t-plain" style="--i:0" x="3.6" y="150.9" width="64.8" height="49.1"/><rect class="bar t-plain" style="--i:1" x="75.6" y="36.4" width="64.8" height="163.6"/><rect class="bar t-plain" style="--i:2" x="147.6" y="200.0" width="64.8" height="1.0"/><rect class="bar t-plain" style="--i:3" x="219.6" y="134.5" width="64.8" height="65.5"/><rect class="bar t-brand" style="--i:4" x="291.6" y="200.0" width="64.8" height="1.0"/><text class="axis halo" x="0" y="114.2">5</text><text class="axis halo" x="0" y="32.4">10</text><text class="axis" x="36.0" y="220.0" text-anchor="middle">Sep 20</text><text class="axis" x="108.0" y="220.0" text-anchor="middle">Sep 27</text><text class="axis" x="180.0" y="220.0" text-anchor="middle">Oct 4</text><text class="axis" x="252.0" y="220.0" text-anchor="middle">Oct 11</text><text class="axis" x="324.0" y="220.0" text-anchor="middle">Oct 18</text><rect class="hit" x="0.0" y="0" width="72.0" height="200.0" data-tip="Sep 20 to 26 · 3 conversions · $409.53 spend"/><rect class="hit" x="72.0" y="0" width="72.0" height="200.0" data-tip="Sep 27 to Oct 3 · 10 conversions · $378.45 spend"/><rect class="hit" x="144.0" y="0" width="72.0" height="200.0" data-tip="Oct 4 to 10 · 0 conversions · $403.50 spend"/><rect class="hit" x="216.0" y="0" width="72.0" height="200.0" data-tip="Oct 11 to 17 · 4 conversions · $377.69 spend"/><rect class="hit" x="288.0" y="0" width="72.0" height="200.0" data-tip="Oct 18 to 24 · 0 conversions · $359.43 spend"/><line class="hovline" y1="0" y2="200.0"/><circle class="hov t-bad" r="5"/></svg><p class="cap">Bing conversions by week, Sunday to Saturday, Sep 20 to Oct 24, by click date</p></div>
+</section>
+<section>
+  <p class="kicker anim">October · 5</p>
+  <h2 class="anim" style="--d:.1s">Google is on pace for $4,985.32 in October, under the $6,900 cap</h2>
+  <p class="lead anim" style="--d:0.20s">Oct 1 to 24, Google spent $3,859.60 and Bing $1,306.33. Bing is on pace for $1,687.34, under its $1,800 budget.</p>
+  <div class="anim" style="--d:0.30s"><svg viewBox="0 0 760 260" class="chart big small" role="img"><text class="rowlbl" x="0" y="22.0">Google pace</text><rect class="hbar t-accent" style="--i:0" x="0" y="32.0" width="455.8" height="18" rx="3"/><text class="val" x="465.8" y="47.0">$4,985.32</text><text class="rowlbl" x="0" y="86.0">Google cap</text><rect class="hbar t-plain" style="--i:6" x="0" y="96.0" width="630.9" height="18" rx="3"/><text class="val" x="640.9" y="111.0">$6,900</text><text class="rowlbl" x="0" y="150.0">Bing pace</text><rect class="hbar t-accent" style="--i:12" x="0" y="160.0" width="154.3" height="18" rx="3"/><text class="val" x="164.3" y="175.0">$1,687.34</text><text class="rowlbl" x="0" y="214.0">Bing budget</text><rect class="hbar t-plain" style="--i:18" x="0" y="224.0" width="164.6" height="18" rx="3"/><text class="val" x="174.6" y="239.0">$1,800</text></svg><svg viewBox="0 0 360 236" class="chart phone" role="img"><text class="rowlbl" x="0" y="18.0">Google pace</text><rect class="hbar t-accent" style="--i:0" x="0" y="26.0" width="163.8" height="16" rx="3"/><text class="val" x="171.8" y="39.0">$4,985.32</text><text class="rowlbl" x="0" y="76.0">Google cap</text><rect class="hbar t-plain" style="--i:6" x="0" y="84.0" width="226.7" height="16" rx="3"/><text class="val" x="234.7" y="97.0">$6,900</text><text class="rowlbl" x="0" y="134.0">Bing pace</text><rect class="hbar t-accent" style="--i:12" x="0" y="142.0" width="55.4" height="16" rx="3"/><text class="val" x="63.4" y="155.0">$1,687.34</text><text class="rowlbl" x="0" y="192.0">Bing budget</text><rect class="hbar t-plain" style="--i:18" x="0" y="200.0" width="59.1" height="16" rx="3"/><text class="val" x="67.1" y="213.0">$1,800</text></svg><p class="cap">October pace from spend Oct 1 to 24, against each monthly budget</p></div>
+</section>
+<section>
+  <p class="kicker anim">Your question · 6</p>
+  <h2 class="anim" style="--d:.1s">The 3 new campaigns spent $644.92 Oct 1 to 19 and brought 1 form</h2>
+  <p class="lead anim" style="--d:0.20s">On Oct 8 we moved the Vascular Access and Advanced Applications budgets back to Generic. On Oct 20 the catheter and vascular ad groups moved into our second Generic campaign.</p>
+  <div class="anim" style="--d:0.30s"><table class="list"><thead><tr><th>Campaign</th><th class="num">Spend</th><th class="num">Clicks</th><th class="num">Forms</th></tr></thead><tbody><tr><td>Catheter Systems, paused Oct 20</td><td class="num">$640.04</td><td class="num">28</td><td class="num">1</td></tr><tr><td>Vascular Access, paused Oct 20</td><td class="num">$4.88</td><td class="num">1</td><td class="num">0</td></tr><tr><td>Advanced Applications, paused Oct 15</td><td class="num">$0.00</td><td class="num">0</td><td class="num">0</td></tr></tbody></table><p class="cap">Google, Oct 1 to 19, by click date. Catheter clicks cost $22.86 each, and the 1 form came Oct 5.</p></div>
+  <p class="bad anim" style="--d:0.40s">In their first 5 days there, the 7 catheter and vascular ad groups showed 26 times and got no click yet. We judge them on Nov 3, and point them at your new pages once you send the links.</p>
+</section>
+<section>
+  <p class="kicker anim">What we changed · 7</p>
+  <h2 class="anim" style="--d:.1s">We made 5 changes Oct 19 to 22</h2>
+  <div class="tiles"><div class="tile anim" style="--d:0.15s"><svg viewBox="0 0 24 24" class="ck" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><b>Oct 19: budgets $5 to $30</b><span>Vascular Access and Advanced Applications. Both are paused now.</span></div><div class="tile anim" style="--d:0.27s"><svg viewBox="0 0 24 24" class="ck" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><b>Oct 20: catheter ads moved</b><span>Second Generic campaign back at $150 a day, up from $70, with 7 catheter and vascular ad groups.</span></div><div class="tile anim" style="--d:0.39s"><svg viewBox="0 0 24 24" class="ck" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><b>Oct 20: bidding test ended</b><span>Not kept; all of Generic runs on its normal bids.</span></div><div class="tile anim" style="--d:0.51s"><svg viewBox="0 0 24 24" class="ck" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><b>Oct 21: Bay Area off</b><span>On Generic: 17 clicks there since Sep 1, no form.</span></div><div class="tile anim" style="--d:0.63s"><svg viewBox="0 0 24 24" class="ck" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><b>Oct 22: dynamic search added</b><span>$50 a day for searches that match your pages.</span></div></div>
+</section>
+</div><nav><i></i></nav><div class="hint">← → or click to move</div><div class="count"></div><div class="tip"></div>
+<script>
+/* The deck's moves (the Mokomoko recovery deck, 2026-10-02).
+   - The stage (a laptop): one slide at a time, scaled to fit; arrow keys, a click (right two thirds: next, left
+     third: back), or a swipe move it. The progress bar, the counter, and the address (#3) follow.
+   - The page (a phone; the same media query as deck.css): every slide is shown, one under the other. A slide
+     animates in once it scrolls into view. Clicks and swipes do not move anything; #3 scrolls to slide 3.
+   - Charts: a hover (or a tap) shows the slot's tip, a line at the slot, and the point's dot. A toggle switches the
+     views of one chart and draws the new view in again. */
+const S = [...document.querySelectorAll('section')], stage = document.querySelector('.stage');
+const bar = document.querySelector('nav i'), cnt = document.querySelector('.count'), tip = document.querySelector('.tip');
+const PAGE = matchMedia('screen and (max-width:1087px), screen and (max-height:611px)');
+let n = 0;
+const seen = new IntersectionObserver(es => es.forEach(e => {
+  if (e.isIntersecting) { e.target.classList.add('active'); seen.unobserve(e.target); }
+}), { rootMargin: '0px 0px -8% 0px' });
+function fit() {
+  if (PAGE.matches) { stage.style.transform = ''; return; }
+  const s = Math.min(innerWidth / 1280, innerHeight / 720);
+  stage.style.transform = `translate(-50%,-50%) scale(${s})`;
+}
+function go(i) {
+  n = Math.max(0, Math.min(S.length - 1, i));
+  if (PAGE.matches) { if (n > 0) S[n].scrollIntoView({ block: 'start' }); return; }
+  S.forEach((s, j) => s.classList.toggle('active', j === n));
+  bar.style.width = ((n + 1) / S.length * 100) + '%';
+  cnt.textContent = (n + 1) + ' / ' + S.length;
+  history.replaceState(null, '', '#' + (n + 1));
+}
+function layout() {
+  fit();
+  if (PAGE.matches) S.forEach(s => { if (!s.classList.contains('active')) seen.observe(s); });
+  else { seen.disconnect(); go(n); }
+}
+addEventListener('keydown', e => {
+  if (PAGE.matches) return;
+  if (['ArrowRight', 'PageDown', ' '].includes(e.key)) go(n + 1);
+  if (['ArrowLeft', 'PageUp'].includes(e.key)) go(n - 1);
+  if (e.key === 'Home') go(0);
+  if (e.key === 'End') go(S.length - 1);
+});
+document.querySelectorAll('.toggle button').forEach(b => b.addEventListener('click', e => {
+  e.stopPropagation();
+  const w = b.closest('.views');
+  w.querySelectorAll('.toggle button').forEach(x => x.classList.toggle('on', x === b));
+  w.querySelectorAll('.v').forEach(v => {
+    const on = v.dataset.k === b.dataset.v;
+    if (on && !v.classList.contains('on')) { const c = v.cloneNode(true); c.classList.add('on'); v.replaceWith(c); }
+    else if (!on) v.classList.remove('on');
+  });
+}));
+addEventListener('click', e => {
+  if (PAGE.matches || e.target.closest('a,button,.toggle')) return;
+  go(e.clientX > innerWidth / 3 ? n + 1 : n - 1);
+});
+let x0 = null;
+addEventListener('touchstart', e => { x0 = e.touches[0].clientX; }, { passive: true });
+addEventListener('touchend', e => {
+  if (x0 === null || PAGE.matches) { x0 = null; return; }
+  const dx = e.changedTouches[0].clientX - x0;
+  if (Math.abs(dx) > 40) go(dx < 0 ? n + 1 : n - 1);
+  x0 = null;
+});
+function hover(e) {
+  const h = e.target.closest && e.target.closest('[data-tip]');
+  document.querySelectorAll('.chart.hovering').forEach(c => { if (!h || !c.contains(h)) c.classList.remove('hovering'); });
+  if (!h) { tip.classList.remove('on'); return; }
+  const svg = h.ownerSVGElement, line = svg.querySelector('.hovline'), dot = svg.querySelector('.hov');
+  const x = +h.getAttribute('x') + (+h.getAttribute('width')) / 2;
+  svg.classList.add('hovering');
+  line.setAttribute('x1', x); line.setAttribute('x2', x);
+  if (h.dataset.cx) { dot.setAttribute('cx', h.dataset.cx); dot.setAttribute('cy', h.dataset.cy); dot.classList.add('on'); }
+  else dot.classList.remove('on');
+  tip.textContent = h.dataset.tip;
+  const half = Math.min(tip.offsetWidth / 2 + 8, innerWidth / 2);
+  tip.style.left = Math.min(Math.max(e.clientX, half), innerWidth - half) + 'px';
+  tip.style.top = e.clientY + 'px';
+  tip.classList.add('on');
+}
+addEventListener('pointermove', hover);
+addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse') hover(e); });
+addEventListener('resize', fit);
+PAGE.addEventListener('change', layout);
+n = Math.max(0, Math.min(S.length - 1, (parseInt(location.hash.slice(1)) || 1) - 1));
+if (PAGE.matches) { S.forEach(s => s.classList.remove('active')); }
+layout();
+if (PAGE.matches) go(n);
+/* The font changes the page's height once it is in: scroll to the slide again. */
+if (document.fonts) document.fonts.ready.then(() => { if (PAGE.matches) go(n); });
+</script></body></html>
